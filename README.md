@@ -39,9 +39,13 @@ val trainer = new FactorizationMachines()
 
 val model = trainer.fit(train)
 val result = model.transform(test)
-val predictionAndLabel = result.select("prediction", "label")
-val evaluator = new MulticlassClassificationEvaluator().setMetricName("accuracy")
-println("Accuracy: " + evaluator.evaluate(predictionAndLabel))
+ val trainpredictionAndLabels = trainResult.select("prediction", "label").rdd.map {
+      case Row(probability: Double, label: Double) =>
+        (probability, label)
+    }
+	 val evaluator = new BinaryClassificationMetrics(trainpredictionAndLabels).areaUnderROC()
+	 
+	 println(evaluator)
 spark.stop()
 ```
 
@@ -56,6 +60,4 @@ sbt package
 # Licenses
 Spark-FM is available under Apache Licenses 2.0.
 
-# Contact & Feedback
-If you encounter bugs, feel free to submit an issue or pull request. Also you can mail to:
-+ hibayesian (hibayesian@gmail.com).
+
